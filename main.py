@@ -312,12 +312,12 @@ def get_beijing_time():
 
 def format_date_folder():
     """格式化日期文件夹"""
-    return get_beijing_time().strftime("%Y-%m-%d")
+    return get_beijing_time().strftime("%Y年%m月%d日")
 
 
 def format_time_filename():
     """格式化时间文件名"""
-    return get_beijing_time().strftime("%H-%M")
+    return get_beijing_time().strftime("%H时%M分")
 
 
 def clean_title(title: str) -> str:
@@ -2220,21 +2220,6 @@ def render_html_content(
                         rank_text = f"{min_rank}-{max_rank}"
 
                     html += f'<span class="rank-num {rank_class}">{rank_text}</span>'
-
-                # 处理时间显示
-                time_display = title_data.get("time_display", "")
-                if time_display:
-                    # 简化时间显示格式，将波浪线替换为~，将时间分隔符-替换为:
-                    simplified_time = (
-                        time_display.replace(" ~ ", "~")
-                        .replace("[", "")
-                        .replace("]", "")
-                    )
-                    # Convert time format from HH-MM to HH:MM for better readability
-                    simplified_time = re.sub(r'(\d{2})-(\d{2})', r'\1:\2', simplified_time)
-                    html += (
-                        f'<span class="time-info">{html_escape(simplified_time)}</span>'
-                    )
 
                 # 处理出现次数
                 count_info = title_data.get("count", 1)
