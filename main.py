@@ -301,19 +301,23 @@ def deduplicate_titles_with_llm(titles: List[Dict]) -> List[Dict]:
 
 
 # === 工具函数 ===
+def get_timezone():
+    """获取配置的时区（可通过TIMEZONE环境变量配置，默认Australia/Melbourne）"""
+    return os.environ.get("TIMEZONE", "Australia/Melbourne")
+
 def get_beijing_time():
-    """获取北京时间"""
-    return datetime.now(pytz.timezone("Asia/Shanghai"))
+    """获取本地时间（可通过TIMEZONE环境变量配置，默认Australia/Melbourne）"""
+    return datetime.now(pytz.timezone(get_timezone()))
 
 
 def format_date_folder():
     """格式化日期文件夹"""
-    return get_beijing_time().strftime("%Y年%m月%d日")
+    return get_beijing_time().strftime("%Y-%m-%d")
 
 
 def format_time_filename():
     """格式化时间文件名"""
-    return get_beijing_time().strftime("%H时%M分")
+    return get_beijing_time().strftime("%H-%M")
 
 
 def clean_title(title: str) -> str:
@@ -436,7 +440,7 @@ class PushRecordManager:
             try:
                 date_str = record_file.stem.replace("push_record_", "")
                 file_date = datetime.strptime(date_str, "%Y%m%d")
-                file_date = pytz.timezone("Asia/Shanghai").localize(file_date)
+                file_date = pytz.timezone(get_timezone()).localize(file_date)
 
                 if (current_time - file_date).days > retention_days:
                     record_file.unlink()
@@ -2220,12 +2224,14 @@ def render_html_content(
                 # 处理时间显示
                 time_display = title_data.get("time_display", "")
                 if time_display:
-                    # 简化时间显示格式，将波浪线替换为~
+                    # 简化时间显示格式，将波浪线替换为~，将时间分隔符-替换为:
                     simplified_time = (
                         time_display.replace(" ~ ", "~")
                         .replace("[", "")
                         .replace("]", "")
                     )
+                    # Convert time format from HH-MM to HH:MM for better readability
+                    simplified_time = re.sub(r'(\d{2})-(\d{2})', r'\1:\2', simplified_time)
                     html += (
                         f'<span class="time-info">{html_escape(simplified_time)}</span>'
                     )
@@ -4376,7 +4382,7 @@ class NewsAnalyzer:
     def _initialize_and_check_config(self) -> None:
         """通用初始化和配置检查"""
         now = get_beijing_time()
-        print(f"当前北京时间: {now.strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"Current time ({get_timezone()}): {now.strftime('%Y-%m-%d %H:%M:%S')}")
 
         if not CONFIG["ENABLE_CRAWLER"]:
             print("爬虫功能已禁用（ENABLE_CRAWLER=False），程序退出")
