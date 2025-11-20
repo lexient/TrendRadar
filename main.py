@@ -1060,7 +1060,7 @@ def count_word_frequency(
     # 如果没有配置词组，创建一个包含所有新闻的虚拟词组
     if not word_groups:
         print("频率词配置为空，将显示所有新闻")
-        word_groups = [{"required": [], "normal": [], "group_key": "全部新闻"}]
+        word_groups = [{"required": [], "normal": [], "group_key": "All News"}]
         filter_words = []  # 清空过滤词，显示所有新闻
 
     is_first_today = is_first_crawl_today()
@@ -1115,7 +1115,7 @@ def count_word_frequency(
         total_input_news = sum(len(titles) for titles in results.values())
         filter_status = (
             "全部显示"
-            if len(word_groups) == 1 and word_groups[0]["group_key"] == "全部新闻"
+            if len(word_groups) == 1 and word_groups[0]["group_key"] == "All News"
             else "频率词过滤"
         )
         print(f"当日汇总模式：处理 {total_input_news} 条新闻，模式：{filter_status}")
@@ -1168,8 +1168,8 @@ def count_word_frequency(
                 required_words = group["required"]
                 normal_words = group["normal"]
 
-                # 如果是"全部新闻"模式，所有标题都匹配第一个（唯一的）词组
-                if len(word_groups) == 1 and word_groups[0]["group_key"] == "全部新闻":
+                # 如果是"All News"模式，所有标题都匹配第一个（唯一的）词组
+                if len(word_groups) == 1 and word_groups[0]["group_key"] == "All News":
                     group_key = group["group_key"]
                     word_stats[group_key]["count"] += 1
                     if source_id not in word_stats[group_key]["titles"]:
@@ -1278,7 +1278,7 @@ def count_word_frequency(
             total_input_news = sum(len(titles) for titles in results.values())
             filter_status = (
                 "全部显示"
-                if len(word_groups) == 1 and word_groups[0]["group_key"] == "全部新闻"
+                if len(word_groups) == 1 and word_groups[0]["group_key"] == "All News"
                 else "频率词匹配"
             )
             print(
@@ -1290,7 +1290,7 @@ def count_word_frequency(
                 filter_status = (
                     "全部显示"
                     if len(word_groups) == 1
-                    and word_groups[0]["group_key"] == "全部新闻"
+                    and word_groups[0]["group_key"] == "All News"
                     else "匹配频率词"
                 )
                 print(
@@ -1305,7 +1305,7 @@ def count_word_frequency(
         if is_first_today:
             filter_status = (
                 "全部显示"
-                if len(word_groups) == 1 and word_groups[0]["group_key"] == "全部新闻"
+                if len(word_groups) == 1 and word_groups[0]["group_key"] == "All News"
                 else "频率词匹配"
             )
             print(
@@ -1315,7 +1315,7 @@ def count_word_frequency(
             matched_count = sum(stat["count"] for stat in word_stats.values())
             filter_status = (
                 "全部显示"
-                if len(word_groups) == 1 and word_groups[0]["group_key"] == "全部新闻"
+                if len(word_groups) == 1 and word_groups[0]["group_key"] == "All News"
                 else "频率词匹配"
             )
             print(
