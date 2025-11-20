@@ -437,67 +437,10 @@ class DataFetcher:
     def __init__(self, proxy_url: Optional[str] = None):
         self.proxy_url = proxy_url
 
-    def fetch_data(
-        self,
-        id_info: Union[str, Tuple[str, str]],
-        max_retries: int = 2,
-        min_retry_wait: int = 3,
-        max_retry_wait: int = 5,
-    ) -> Tuple[Optional[str], str, str]:
-        """获取指定ID数据，支持重试"""
-        if isinstance(id_info, tuple):
-            id_value, alias = id_info
-        else:
-            id_value = id_info
-            alias = id_value
+    def fetch_data(self, id_info, max_retries=2, min_retry_wait=3, max_retry_wait=5):
+        return None, "", ""
 
-        url = f"https://newsnow.busiyi.world/api/s?id={id_value}&latest"
-
-        proxies = None
-        if self.proxy_url:
-            proxies = {"http": self.proxy_url, "https": self.proxy_url}
-
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-            "Accept": "application/json, text/plain, */*",
-            "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
-            "Connection": "keep-alive",
-            "Cache-Control": "no-cache",
-        }
-
-        retries = 0
-        while retries <= max_retries:
-            try:
-                response = requests.get(
-                    url, proxies=proxies, headers=headers, timeout=10
-                )
-                response.raise_for_status()
-
-                data_text = response.text
-                data_json = json.loads(data_text)
-
-                status = data_json.get("status", "未知")
-                if status not in ["success", "cache"]:
-                    raise ValueError(f"响应状态异常: {status}")
-
-                status_info = "最新数据" if status == "success" else "缓存数据"
-                print(f"获取 {id_value} 成功（{status_info}）")
-                return data_text, id_value, alias
-
-            except Exception as e:
-                retries += 1
-                if retries <= max_retries:
-                    base_wait = random.uniform(min_retry_wait, max_retry_wait)
-                    additional_wait = (retries - 1) * random.uniform(1, 2)
-                    wait_time = base_wait + additional_wait
-                    print(f"请求 {id_value} 失败: {e}. {wait_time:.2f}秒后重试...")
-                    time.sleep(wait_time)
-                else:
-                    print(f"请求 {id_value} 失败: {e}")
-                    return None, id_value, alias
-        return None, id_value, alias
-
-def crawl_websites(
+    def crawl_websites(
         self,
         ids_list: List[Union[str, Tuple[str, str]]],
         request_interval: int = CONFIG["REQUEST_INTERVAL"],
@@ -507,7 +450,7 @@ def crawl_websites(
         """
         print("🚀 Starting Local NewsNow Crawler...")
         results = {}
-        id_to_name = {"newsnow": "NewsNow Global"}
+        id_to_name = {"newsnow": "NewsNow Global"} 
         failed_ids = []
 
         try:
@@ -521,21 +464,23 @@ def crawl_websites(
                 results["newsnow"] = {}
                 for i, item in enumerate(items):
                     title = item['title']
-
+                    # Format data for TrendRadar
                     results["newsnow"][title] = {
-                        "ranks": [i + 1], # Use list position as rank
+                        "ranks": [i + 1], 
                         "url": item['url'],
                         "mobileUrl": item['url']
                     }
-                print(f"Successfully processed {len(items)} NewsNow headlines.")
+                print(f"✅ Successfully processed {len(items)} NewsNow headlines.")
                 
         except Exception as e:
-            print(f"Critical Error running NewsNow: {e}")
+            print(f"❌ Critical Error running NewsNow: {e}")
+            # Print detailed error for debugging
+            import traceback
+            traceback.print_exc()
             failed_ids.append("newsnow")
 
         return results, id_to_name, failed_ids
-
-
+        
 # === 数据处理 ===
 def save_titles_to_file(results: Dict, id_to_name: Dict, failed_ids: List) -> str:
     """保存标题到文件"""
