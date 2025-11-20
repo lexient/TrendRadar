@@ -218,6 +218,88 @@ print(f"TrendRadar v{VERSION} 配置加载完成")
 print(f"监控平台数量: {len(CONFIG['PLATFORMS'])}")
 
 
+# === LLM 去重 ===
+def deduplicate_titles_with_llm(titles: List[Dict]) -> List[Dict]:
+    llm_url = os.environ.get("LLM_URL", "").strip()
+    llm_api_key = os.environ.get("LLM_API_KEY", "").strip()
+    llm_model = os.environ.get("LLM_MODEL", "gpt-5-mini").strip()
+
+    if not llm_url or not llm_api_key or len(titles) < 2:
+        return titles
+
+    try:
+        titles_text = "\n".join([f"{i+1}. {t.get('title', '')}" for i, t in enumerate(titles)])
+
+        response = requests.post(
+            f"{llm_url.rstrip('/')}/chat/completions",
+            headers={
+                "Authorization": f"Bearer {llm_api_key}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": llm_model,
+                "messages": [{
+                    "role": "user",
+                    "content": f"Group similar news headlines and provide a summary for each group. Return JSON array: [{{\"summary\":\"...\",\"indices\":[1,2,3]}},...]. Headlines:\n{titles_text}"
+                }],
+                "temperature": 0.3
+            },
+            timeout=30
+        )
+
+        if response.status_code != 200:
+            return titles
+
+        result = response.json()
+        content = result.get("choices", [{}])[0].get("message", {}).get("content", "")
+
+        groups = json.loads(content)
+        if not isinstance(groups, list):
+            return titles
+
+        deduplicated = []
+        used_indices = set()
+
+        for group in groups:
+            indices = group.get("indices", [])
+            if not indices:
+                continue
+
+            indices = [i-1 for i in indices if 0 < i <= len(titles)]
+            if not indices:
+                continue
+
+            base_idx = indices[0]
+            if base_idx in used_indices or base_idx >= len(titles):
+                continue
+
+            base_title = titles[base_idx].copy()
+            base_title["title"] = group.get("summary", base_title.get("title", ""))
+
+            all_ranks = []
+            total_count = 0
+
+            for idx in indices:
+                if idx < len(titles) and idx not in used_indices:
+                    used_indices.add(idx)
+                    all_ranks.extend(titles[idx].get("ranks", []))
+                    total_count += titles[idx].get("count", 0)
+
+            base_title["ranks"] = all_ranks
+            base_title["count"] = total_count
+            deduplicated.append(base_title)
+
+        for i, title in enumerate(titles):
+            if i not in used_indices:
+                deduplicated.append(title)
+
+        return deduplicated
+
+    except Exception as e:
+        print(f"LLM去重失败: {e}")
+        return titles
+
+
 # === 工具函数 ===
 def get_beijing_time():
     """获取北京时间"""
@@ -4149,6 +4231,10 @@ class NewsAnalyzer:
             new_titles,
             mode=mode,
         )
+
+        # LLM去重
+        for stat in stats:
+            stat["titles"] = deduplicate_titles_with_llm(stat["titles"])
 
         # HTML生成
         html_file = generate_html_report(
