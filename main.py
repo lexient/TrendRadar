@@ -18,7 +18,7 @@ from typing import Dict, List, Tuple, Optional, Union
 import pytz
 import requests
 import yaml
-
+from newsnow import NewsNow
 
 VERSION = "3.0.5"
 
@@ -497,58 +497,42 @@ class DataFetcher:
                     return None, id_value, alias
         return None, id_value, alias
 
-    def crawl_websites(
+def crawl_websites(
         self,
         ids_list: List[Union[str, Tuple[str, str]]],
         request_interval: int = CONFIG["REQUEST_INTERVAL"],
     ) -> Tuple[Dict, Dict, List]:
-        """爬取多个网站数据"""
+        """
+        MODIFIED: Ignore config and crawl NewsNow locally.
+        """
+        print("🚀 Starting Local NewsNow Crawler...")
         results = {}
-        id_to_name = {}
+        id_to_name = {"newsnow": "NewsNow Global"}
         failed_ids = []
 
-        for i, id_info in enumerate(ids_list):
-            if isinstance(id_info, tuple):
-                id_value, name = id_info
+        try:
+            crawler = NewsNow()
+            items = crawler.crawl() 
+            
+            if not items:
+                print("NewsNow found 0 items.")
+                failed_ids.append("newsnow")
             else:
-                id_value = id_info
-                name = id_value
+                results["newsnow"] = {}
+                for i, item in enumerate(items):
+                    title = item['title']
 
-            id_to_name[id_value] = name
-            response, _, _ = self.fetch_data(id_info)
+                    results["newsnow"][title] = {
+                        "ranks": [i + 1], # Use list position as rank
+                        "url": item['url'],
+                        "mobileUrl": item['url']
+                    }
+                print(f"Successfully processed {len(items)} NewsNow headlines.")
+                
+        except Exception as e:
+            print(f"Critical Error running NewsNow: {e}")
+            failed_ids.append("newsnow")
 
-            if response:
-                try:
-                    data = json.loads(response)
-                    results[id_value] = {}
-                    for index, item in enumerate(data.get("items", []), 1):
-                        title = item["title"]
-                        url = item.get("url", "")
-                        mobile_url = item.get("mobileUrl", "")
-
-                        if title in results[id_value]:
-                            results[id_value][title]["ranks"].append(index)
-                        else:
-                            results[id_value][title] = {
-                                "ranks": [index],
-                                "url": url,
-                                "mobileUrl": mobile_url,
-                            }
-                except json.JSONDecodeError:
-                    print(f"解析 {id_value} 响应失败")
-                    failed_ids.append(id_value)
-                except Exception as e:
-                    print(f"处理 {id_value} 数据出错: {e}")
-                    failed_ids.append(id_value)
-            else:
-                failed_ids.append(id_value)
-
-            if i < len(ids_list) - 1:
-                actual_interval = request_interval + random.randint(-10, 20)
-                actual_interval = max(50, actual_interval)
-                time.sleep(actual_interval / 1000)
-
-        print(f"成功: {list(results.keys())}, 失败: {failed_ids}")
         return results, id_to_name, failed_ids
 
 
