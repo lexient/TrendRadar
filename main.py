@@ -1397,7 +1397,7 @@ def format_title_for_platform(
         if title_data["time_display"]:
             result += f" <font color='grey'>- {title_data['time_display']}</font>"
         if title_data["count"] > 1:
-            result += f" <font color='green'>({title_data['count']}次)</font>"
+            result += f" <font color='green'>({title_data['count']} times)</font>"
 
         return result
 
@@ -1513,7 +1513,7 @@ def format_title_for_platform(
             escaped_time = html_escape(title_data["time_display"])
             formatted_title += f" <font color='grey'>- {escaped_time}</font>"
         if title_data["count"] > 1:
-            formatted_title += f" <font color='green'>({title_data['count']}次)</font>"
+            formatted_title += f" <font color='green'>({title_data['count']} times)</font>"
 
         if title_data.get("is_new"):
             formatted_title = f"<div class='new-title'>🆕 {formatted_title}</div>"
@@ -1537,11 +1537,11 @@ def generate_html_report(
     """生成HTML报告"""
     if is_daily_summary:
         if mode == "current":
-            filename = "当前榜单汇总.html"
+            filename = "Current_Rankings_Summary.html"
         elif mode == "incremental":
-            filename = "当日增量.html"
+            filename = "Daily_Incremental.html"
         else:
-            filename = "当日汇总.html"
+            filename = "Daily_Summary.html"
     else:
         filename = f"{format_time_filename()}.html"
 
@@ -1578,7 +1578,7 @@ def render_html_content(
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>热点新闻分析</title>
+        <title>Trending News Analysis</title>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <style>
             * { box-sizing: border-box; }
@@ -2007,33 +2007,33 @@ def render_html_content(
         <div class="container">
             <div class="header">
                 <div class="save-buttons">
-                    <button class="save-btn" onclick="saveAsImage()">保存为图片</button>
-                    <button class="save-btn" onclick="saveAsMultipleImages()">分段保存</button>
+                    <button class="save-btn" onclick="saveAsImage()">Save as Image</button>
+                    <button class="save-btn" onclick="saveAsMultipleImages()">Save in Segments</button>
                 </div>
-                <div class="header-title">热点新闻分析</div>
+                <div class="header-title">Trending News Analysis</div>
                 <div class="header-info">
                     <div class="info-item">
-                        <span class="info-label">报告类型</span>
+                        <span class="info-label">Report Type</span>
                         <span class="info-value">"""
 
     # 处理报告类型显示
     if is_daily_summary:
         if mode == "current":
-            html += "当前榜单"
+            html += "Current Rankings"
         elif mode == "incremental":
-            html += "增量模式"
+            html += "Incremental"
         else:
-            html += "当日汇总"
+            html += "Daily Summary"
     else:
-        html += "实时分析"
+        html += "Real-time"
 
     html += """</span>
                     </div>
                     <div class="info-item">
-                        <span class="info-label">新闻总数</span>
+                        <span class="info-label">Total News</span>
                         <span class="info-value">"""
 
-    html += f"{total_titles} 条"
+    html += f"{total_titles} items"
 
     # 计算筛选后的热点新闻数量
     hot_news_count = sum(len(stat["titles"]) for stat in report_data["stats"])
@@ -2041,15 +2041,15 @@ def render_html_content(
     html += """</span>
                     </div>
                     <div class="info-item">
-                        <span class="info-label">热点新闻</span>
+                        <span class="info-label">Hot Topics</span>
                         <span class="info-value">"""
 
-    html += f"{hot_news_count} 条"
+    html += f"{hot_news_count} items"
 
     html += """</span>
                     </div>
                     <div class="info-item">
-                        <span class="info-label">生成时间</span>
+                        <span class="info-label">Generated</span>
                         <span class="info-value">"""
 
     now = get_beijing_time()
@@ -2066,7 +2066,7 @@ def render_html_content(
     if report_data["failed_ids"]:
         html += """
                 <div class="error-section">
-                    <div class="error-title">⚠️ 请求失败的平台</div>
+                    <div class="error-title">⚠️ Failed Platforms</div>
                     <ul class="error-list">"""
         for id_value in report_data["failed_ids"]:
             html += f'<li class="error-item">{html_escape(id_value)}</li>'
@@ -2096,7 +2096,7 @@ def render_html_content(
                     <div class="word-header">
                         <div class="word-info">
                             <div class="word-name">{escaped_word}</div>
-                            <div class="word-count {count_class}">{count} 条</div>
+                            <div class="word-count {count_class}">{count} items</div>
                         </div>
                         <div class="word-index">{i}/{total_count}</div>
                     </div>"""
@@ -2151,7 +2151,7 @@ def render_html_content(
                 # 处理出现次数
                 count_info = title_data.get("count", 1)
                 if count_info > 1:
-                    html += f'<span class="count-info">{count_info}次</span>'
+                    html += f'<span class="count-info">{count_info} times</span>'
 
                 html += """
                             </div>
@@ -2179,7 +2179,7 @@ def render_html_content(
     if report_data["new_titles"]:
         html += f"""
                 <div class="new-section">
-                    <div class="new-section-title">本次新增热点 (共 {report_data['total_new_count']} 条)</div>"""
+                    <div class="new-section-title">New Topics ({report_data['total_new_count']} items)</div>"""
 
         for source_data in report_data["new_titles"]:
             escaped_source = html_escape(source_data["source_name"])
@@ -2187,7 +2187,7 @@ def render_html_content(
 
             html += f"""
                     <div class="new-source-group">
-                        <div class="new-source-title">{escaped_source} · {titles_count}条</div>"""
+                        <div class="new-source-title">{escaped_source} · {titles_count} items</div>"""
 
             # 为新增新闻也添加序号
             for idx, title_data in enumerate(source_data["titles"], 1):
@@ -2239,19 +2239,19 @@ def render_html_content(
 
     html += """
             </div>
-            
+
             <div class="footer">
                 <div class="footer-content">
-                    由 <span class="project-name">TrendRadar</span> 生成 · 
+                    Generated by <span class="project-name">TrendRadar</span> ·
                     <a href="https://github.com/sansan0/TrendRadar" target="_blank" class="footer-link">
-                        GitHub 开源项目
+                        GitHub Project
                     </a>"""
 
     if update_info:
         html += f"""
                     <br>
                     <span style="color: #ea580c; font-weight: 500;">
-                        发现新版本 {update_info['remote_version']}，当前版本 {update_info['current_version']}
+                        New version {update_info['remote_version']} available, current {update_info['current_version']}
                     </span>"""
 
     html += """
@@ -2265,7 +2265,7 @@ def render_html_content(
                 const originalText = button.textContent;
                 
                 try {
-                    button.textContent = '生成中...';
+                    button.textContent = 'Generating...';
                     button.disabled = true;
                     window.scrollTo(0, 0);
                     
@@ -2304,7 +2304,7 @@ def render_html_content(
                     
                     const link = document.createElement('a');
                     const now = new Date();
-                    const filename = `TrendRadar_热点新闻分析_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}.png`;
+                    const filename = `TrendRadar_News_Analysis_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}.png`;
                     
                     link.download = filename;
                     link.href = canvas.toDataURL('image/png', 1.0);
@@ -2313,17 +2313,17 @@ def render_html_content(
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
-                    
-                    button.textContent = '保存成功!';
+
+                    button.textContent = 'Saved!';
                     setTimeout(() => {
                         button.textContent = originalText;
                         button.disabled = false;
                     }, 2000);
-                    
+
                 } catch (error) {
                     const buttons = document.querySelector('.save-buttons');
                     buttons.style.visibility = 'visible';
-                    button.textContent = '保存失败';
+                    button.textContent = 'Failed';
                     setTimeout(() => {
                         button.textContent = originalText;
                         button.disabled = false;
@@ -2339,7 +2339,7 @@ def render_html_content(
                 const maxHeight = 5000 / scale;
                 
                 try {
-                    button.textContent = '分析中...';
+                    button.textContent = 'Analyzing...';
                     button.disabled = true;
                     
                     // 获取所有可能的分割元素
@@ -2465,7 +2465,7 @@ def render_html_content(
                         segments.push(currentSegment);
                     }
                     
-                    button.textContent = `生成中 (0/${segments.length})...`;
+                    button.textContent = `Generating (0/${segments.length})...`;
                     
                     // 隐藏保存按钮
                     const buttons = document.querySelector('.save-buttons');
@@ -2475,7 +2475,7 @@ def render_html_content(
                     const images = [];
                     for (let i = 0; i < segments.length; i++) {
                         const segment = segments[i];
-                        button.textContent = `生成中 (${i + 1}/${segments.length})...`;
+                        button.textContent = `Generating (${i + 1}/${segments.length})...`;
                         
                         // 创建临时容器用于截图
                         const tempContainer = document.createElement('div');
@@ -2530,7 +2530,7 @@ def render_html_content(
                     
                     // 下载所有图片
                     const now = new Date();
-                    const baseFilename = `TrendRadar_热点新闻分析_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+                    const baseFilename = `TrendRadar_News_Analysis_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
                     
                     for (let i = 0; i < images.length; i++) {
                         const link = document.createElement('a');
@@ -2543,18 +2543,18 @@ def render_html_content(
                         // 延迟一下避免浏览器阻止多个下载
                         await new Promise(resolve => setTimeout(resolve, 100));
                     }
-                    
-                    button.textContent = `已保存 ${segments.length} 张图片!`;
+
+                    button.textContent = `Saved ${segments.length} images!`;
                     setTimeout(() => {
                         button.textContent = originalText;
                         button.disabled = false;
                     }, 2000);
-                    
+
                 } catch (error) {
-                    console.error('分段保存失败:', error);
+                    console.error('Segmented save failed:', error);
                     const buttons = document.querySelector('.save-buttons');
                     buttons.style.visibility = 'visible';
-                    button.textContent = '保存失败';
+                    button.textContent = 'Failed';
                     setTimeout(() => {
                         button.textContent = originalText;
                         button.disabled = false;
